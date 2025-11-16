@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: quiz-master-db
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - quiz-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    container_name: quiz-master-api
+    ports:
+      - "5000:5000"
+    environment:
+      MONGODB_URI: mongodb://admin:admin@mongodb:27017/quiz_master?authSource=admin
+      JWT_SECRET: your-secret-key-change-this
+      PORT: 5000
+      NODE_ENV: production
+    depends_on:
+      - mongodb
+    networks:
+      - quiz-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: client/Dockerfile
+    container_name: quiz-master-ui
+    ports:
+      - "3000:80"
+    environment:
+      - VITE_API_BASE=http://localhost:5000
+    depends_on:
+      - backend
+    networks:
+      - quiz-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  quiz-network:
+    driver: bridge
