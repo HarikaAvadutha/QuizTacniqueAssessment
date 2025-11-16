@@ -33,13 +33,19 @@ export async function getQuiz(id){
   return res.json()
 }
 
-export async function submitQuizAnswers(quizId, answers){
+export async function submitQuizAnswers(quizId, answers, username){
   const res = await fetch(`${API_BASE}/api/quizzes/${quizId}/submit`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ answers })
+    body: JSON.stringify({ answers, username })
   })
   if(!res.ok) return null
+  return res.json()
+}
+
+export async function getQuizScores(quizId){
+  const res = await fetch(`${API_BASE}/api/quizzes/${quizId}/scores`)
+  if(!res.ok) return []
   return res.json()
 }
 

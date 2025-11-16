@@ -6,6 +6,7 @@ import AdminDashboard from './pages/AdminDashboard'
 import QuizSelector from './pages/QuizSelector'
 import TakeQuiz from './pages/TakeQuiz'
 import Results from './pages/Results'
+import Leaderboard from './pages/Leaderboard'
 
 export default function App(){
   const [token, setToken] = useState(localStorage.getItem('adminToken'))
@@ -38,6 +39,7 @@ export default function App(){
         <Route path="/admin" element={token ? <AdminDashboard token={token} /> : <Login onLogin={(t) => { setToken(t); localStorage.setItem('adminToken', t) }} />} />
         <Route path="/quizzes" element={<QuizSelector />} />
         <Route path="/quiz/:id" element={<TakeQuiz />} />
+        <Route path="/quiz/:id/leaderboard" element={<Leaderboard />} />
         <Route path="/results" element={<Results />} />
       </Routes>
     </div>

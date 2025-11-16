@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Quiz = require('../models/Quiz');
+const Score = require('../models/Score');
 const { authMiddleware } = require('../utils/auth');
 
 // Get all quizzes (public)
@@ -133,7 +134,7 @@ router.delete('/:id/questions/:qId', authMiddleware, async (req, res) => {
 // Submit quiz answers (public)
 router.post('/:id/submit', async (req, res) => {
   try {
-    const { answers } = req.body; // array of {questionId, answer}
+    const { answers, username } = req.body; // array of {questionId, answer}
     const quiz = await Quiz.findById(req.params.id);
     if (!quiz) return res.status(404).json({ error: 'Quiz not found' });
     
@@ -167,14 +168,46 @@ router.post('/:id/submit', async (req, res) => {
     });
 
     const percentage = Math.round((score / quiz.totalPoints) * 100) || 0;
+
+    // Save score if username provided
+    let saved = null;
+    if (username && typeof username === 'string' && username.trim() !== '') {
+      try {
+        saved = await Score.create({
+          quiz: quiz._id,
+          username: username.trim(),
+          score,
+          total: quiz.totalPoints,
+          percentage,
+          details
+        });
+      } catch (e) {
+        // Log and continue; don't fail the response because of score saving
+        console.error('Failed to save score:', e);
+      }
+    }
+
     res.json({
       score,
       total: quiz.totalPoints,
       percentage,
       passed: percentage >= 60,
       message: percentage >= 60 ? 'Passed!' : 'Failed. Try again!',
-      details
+      details,
+      savedScoreId: saved ? saved._id : null,
+      username: saved ? saved.username : (username || null)
     });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get top scores for a quiz (public)
+router.get('/:id/scores', async (req, res) => {
+  try {
+    const quizId = req.params.id;
+    const scores = await Score.find({ quiz: quizId }).sort({ percentage: -1, score: -1, createdAt: 1 }).limit(20).select('-details');
+    res.json(scores);
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
   }

@@ -7,6 +7,7 @@ export default function TakeQuiz() {
   const navigate = useNavigate()
   const [quiz, setQuiz] = useState(null)
   const [answers, setAnswers] = useState([])
+  const [username, setUsername] = useState('')
   const [submitted, setSubmitted] = useState(false)
 
   useEffect(() => {
@@ -28,14 +29,19 @@ export default function TakeQuiz() {
   }
 
   const handleSubmit = async () => {
+    if (!username || username.trim() === '') {
+      alert('Please enter your name before starting the quiz')
+      return
+    }
+
     if (answers.some(a => a === '')) {
       alert('Please answer all questions')
       return
     }
 
-    const result = await submitQuizAnswers(id, answers)
+    const result = await submitQuizAnswers(id, answers, username.trim())
     if (result) {
-      navigate('/results', { state: { result } })
+      navigate('/results', { state: { result, quizId: id } })
     }
   }
 
@@ -48,6 +54,10 @@ export default function TakeQuiz() {
       <p><strong>Total Questions: {quiz.questions?.length || 0} | Total Points: {quiz.totalPoints}</strong></p>
 
       <div style={{ marginBottom: 24 }}>
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ display: 'block', marginBottom: 8 }}>Your name:</label>
+          <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Enter your name" style={{ padding: 8, width: '100%', maxWidth: 400 }} />
+        </div>
         {quiz.questions.map((q, qIdx) => (
           <div key={q._id} style={{ marginBottom: 20, padding: 12, border: '1px solid #ddd', borderRadius: 4 }}>
             <h4>Q{qIdx + 1} ({q.type}, {q.points}pt): {q.question}</h4>

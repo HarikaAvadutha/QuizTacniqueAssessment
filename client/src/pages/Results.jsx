@@ -5,6 +5,7 @@ export default function Results() {
   const location = useLocation()
   const navigate = useNavigate()
   const result = location.state?.result
+  const quizId = location.state?.quizId
 
   if (!result) {
     return (
@@ -20,6 +21,12 @@ export default function Results() {
   return (
     <div style={{ maxWidth: 600, margin: '40px auto' }}>
       <h2>{result.message}</h2>
+
+      {result.username && (
+        <div style={{ marginBottom: 12, textAlign: 'center', color: '#333' }}>
+          <strong>Player:</strong> {result.username}
+        </div>
+      )}
 
       <div style={{
         fontSize: 48,
@@ -63,6 +70,14 @@ export default function Results() {
         >
           Take Another Quiz
         </button>
+        {quizId && (
+          <button
+            onClick={() => navigate(`/quiz/${quizId}/leaderboard`)}
+            style={{ padding: '10px 20px', cursor: 'pointer' }}
+          >
+            View Leaderboard
+          </button>
+        )}
         <button
           onClick={() => navigate('/')}
           style={{ padding: '10px 20px', cursor: 'pointer' }}
